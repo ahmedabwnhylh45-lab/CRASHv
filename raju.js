@@ -3666,53 +3666,52 @@ process.on("uncaughtException", async (err) => {
 }
 
 async function validateToken() {
-  console.log(
+     console.log(
         chalk.blue(`Bot initialization started...`)
      );
-┌───────────────────────────┐
- * helper monitaring created ( rxhl )
- */
- 
+}
 
 process.on("uncaughtExceptionMonitor", (err, origin) => {
-  log.error(`Uncaught Exception Monitor: ${err.message} | Origin: ${origin}`);
+   log.error(`Uncaught Exception Monitor: ${err.message} | Origin: ${origin}`);
 });
+
 process.on("rejectionHandled", (promise) => {
-  log.warning("A previously unhandled rejection was handled later.");
+   log.warning("A previously unhandled rejection was handled later.");
 });
+
 (async () => {
-  try {
-    console.clear();
-    validateToken();
-    log.system("Bot initialization started...");
-    log.telegram("Telegram Bot with grammY is running!");
-    log.success("All systems operational");
-    const sessionFolders = fs.existsSync(sessionRoot)
-      ? fs.readdirSync(sessionRoot)
-      : [];
-    if (sessionFolders.length > 0) {
-      log.loading(
-        `Found ${sessionFolders.length} saved WhatsApp session(s). Attempting to reconnect...`
-      );
-      for (const folder of sessionFolders) {
-        const userId = folder;
-        try {
-          await initWhatsappForUser(userId, false);
-          log.whatsapp(`Attempting reconnect for user ${userId}`);
-        } catch (err) {
-          log.error(
-            `Failed to reconnect session for ${userId}: ${err.message}`
-          );
-        }
-      }
-    } else {
-      log.info("No saved WhatsApp sessions found. Fresh start.");
-    }    
-    await bot.start();
-    console.log(
-      chalk.gray(`\n[${new Date().toLocaleString()}] Bot ready to serve\n`)
-    );
-  } catch (err) {
-    log.error(`An Error Occurred: ${err.message}`);
-  }
+   try {
+     console.clear();
+     validateToken();
+     log.system("Bot initialization started...");
+     log.telegram("Telegram Bot with grammY is running!");
+     log.success("All systems operational");
+     const sessionFolders = fs.existsSync(sessionRoot)
+       ? fs.readdirSync(sessionRoot)
+       : [];
+     if (sessionFolders.length > 0) {
+       log.loading(
+         `Found ${sessionFolders.length} saved WhatsApp session(s). Attempting to reconnect...`
+       );
+       for (const folder of sessionFolders) {
+         const userId = folder;
+         try {
+           await initWhatsappForUser(userId, false);
+           log.whatsapp(`Attempting reconnect for user ${userId}`);
+         } catch (err) {
+           log.error(
+             `Failed to reconnect session for ${userId}: ${err.message}`
+           );
+         }
+       }
+     } else {
+       log.info("No saved WhatsApp sessions found. Fresh start.");
+     }    
+     await bot.start();
+     console.log(
+       chalk.gray(`\n[${new Date().toLocaleString()}] Bot ready to serve\n`)
+     );
+   } catch (err) {
+     log.error(`An Error Occurred: ${err.message}`);
+   }
 })();
