@@ -3,6 +3,6 @@ module.exports = {
     telegramBotToken: "8284447676:AAGYh1VB8vmEiOnUHEBbMVU9b2lSEbLLCVQ", // توكن البوت
     sessionName: "session",
     chanelid: "-1003652947211", // آيدي القناة
-    chatgrupid: "-1003637772522", // آيدي الشات (المجموعة)
-    thumburl: "https:///p_374885vzt1.jpg"
+    chatgrupid: "-1003637772522", // آيدي الشات
+    thumburl: "https://telegra.ph/file/dcab8c983cc40f5a7092c.jpg" // رابط صورة ترحيبية شغال وصحيح
 };
