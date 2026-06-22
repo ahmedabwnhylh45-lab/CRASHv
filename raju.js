@@ -473,7 +473,7 @@ let CardsX = [];
 
 for (let r = 0; r < 1000; r++) {
 CardsX.push({
-body: { text: '👑 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗘𝗥 👑' },
+body: { text: '' },
 header: {
 title: '',
 imageMessage: {
