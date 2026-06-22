@@ -1682,7 +1682,7 @@ bot.use(async (ctx, next) => {
 
     // تم وضع الأيدي الخاص بالقناة والمجموعة هنا للفحص البرمجي بدلاً من المتغيرات
     const memberChannel = await ctx.api
-      .getChatMember("-1003652947211", ctx.from.id)
+      .getChatMember("-1003637772522", ctx.from.id)
       .catch(() => null);
     const memberGroup = await ctx.api
       .getChatMember("-1003637772522", ctx.from.id)
