@@ -1736,28 +1736,24 @@ bot.use(async (ctx, next) => {
         .url("🎥 Subscribe Youtube", "https://youtube.com/@commander-g1k?si=UXW64q6lcvdolDyi");
 
       return await ctx.replyWithPhoto(imageMenu, {
-        caption: `
-⚠️ *Access Denied*
+    caption: `⚠️ *Access Denied*
 
 Hello, ${ctx.from.first_name} 👋
 To unlock all features of this bot, you need to complete a few verification steps first.
 
 🔐 Mandatory Access Requirements
 
- > Join the Telegram Channel
- > Join the Telegram Group
- > Follow TikTok
- > Follow Whatsapp channel
- > Subscribe Youtube Channel 
+- Join the Telegram Channel
+- Join the Telegram Group
+- Follow TikTok
+- Follow Whatsapp channel
+- Subscribe Youtube Channel 
 
 Once all steps are completed, please send /start to continue.
-Thank you for supporting us 🤍
-            `.trim(),
-        parse_mode: "Markdown",
-        reply_markup: keyboard,
-      });
-    }
-
+Thank you for supporting us 🤍`.trim(),
+    parse_mode: "Markdown",
+    reply_markup: keyboard,
+});
     await next();
   } catch (err) {
     log.error(`Cek wajib join error: ${err.message}`);
