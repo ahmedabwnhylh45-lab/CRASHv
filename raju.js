@@ -1768,15 +1768,15 @@ bot.use(async (ctx, next) => {
       ["left", "kicked"].includes(memberGroup.status)
     ) {
       const keyboard = new InlineKeyboard()
-        .url("📢 Join Channel", `https://t.me/${CHANNEL_ID.replace("@t.me/Notfound_Comander", "")}`)
+        .url("📢 Join Channel", "https://t.me/Notfound_Comander")
         .row()
-        .url("✉ Join Group", `https://t.me/${GROUP_ID.replace("@NOTfound_COMANDERr", "")}`)
+        .url("✉ Join Group", "https://t.me/NOTfound_COMANDERr")
         .row()
-        .url("📱 Follow Wahatsapp", "https://whatsapp.com/channel/0029Vb7t4UAFi8xjNTHgjl3P")
+        .url("📱 Follow Whatsapp", "https://whatsapp.com/channel/0029Vb7t4UAFi8xjNTHgjl3P")
         .row()
-        .url("🎵 Follow TikTok", "https://www.tiktok.com/@xcomanderxx?_r=1&_t=ZS-97QrITuhKPi")
+        .url("🎵 Follow TikTok", "https://www.tiktok.com/@xcomanderxx")
         .row()
-        .url("🎥 Subscribe Youtube", "https://youtube.com/@commander-g1k?si=UXW64q6lcvdolDyi");
+        .url("🎥 Subscribe Youtube", "https://youtube.com/@commander-g1k");
 
       return await ctx.replyWithPhoto(imageMenu, {
         caption: `⚠️ Access Denied
