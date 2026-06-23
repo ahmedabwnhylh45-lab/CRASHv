@@ -4,10 +4,14 @@
   "description": "WhatsApp Multi-User Bot with Telegram Control",
   "main": "raju.js",
   "scripts": {
-    "start": "node raju.js"
+    "start": "node raju.js",
+    "install": "npm install --legacy-peer-deps"
   },
   "engines": {
     "node": "20.x"
+  },
+  "overrides": {
+    "jimp": "^0.16.13"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
