@@ -1,17 +1,8 @@
-{
-  "name": "Raju bug bot",
-  "version": "12.0.0",
-  "description": "Raju bug bot",
-  "main": "raju.js",
-  "scripts": {
-    "start": "node raju.js"
-  },
-  "dependencies": {
-    "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "github:kiuur/baileys",
-    "jimp": "^0.16.13",
-    "pino": "^8.15.1",
-    "grammy": "^1.38.3",
-    "chalk": "^4.1.2"
-  }
+"dependencies": {
+  "@hapi/boom": "^10.0.1",
+  "@whiskeysockets/baileys": "^6.7.9",
+  "pino": "^8.15.1",
+  "chalk": "^4.1.2",
+  "grammy": "^1.38.3",
+  "jimp": "^0.16.13"
 }
