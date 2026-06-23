@@ -1680,12 +1680,11 @@ bot.use(async (ctx, next) => {
   try {
     if (!ctx.chat || ctx.chat.type !== "private") return;
 
-    // تم وضع الأيدي الخاص بالقناة والمجموعة هنا للفحص البرمجي بدلاً من المتغيرات
     const memberChannel = await ctx.api
-      .getChatMember("--1003652947211", ctx.from.id)
+      .getChatMember(CHANNEL_ID, ctx.from.id)
       .catch(() => null);
     const memberGroup = await ctx.api
-      .getChatMember("--1003652947211", ctx.from.id)
+      .getChatMember(GROUP_ID, ctx.from.id)
       .catch(() => null);
     const imageMenu = config.thumburl;
 
@@ -1695,13 +1694,12 @@ bot.use(async (ctx, next) => {
       !memberGroup ||
       ["left", "kicked"].includes(memberGroup.status)
     ) {
-      // تم وضع روابط القنوات النصية وحساباتك الجديدة هنا لكي تفتح عند الضغط عليها
       const keyboard = new InlineKeyboard()
-        .url("📢 Join Channel", "https://t.me/Notfound_Comander")
+        .url("📢 Join Channel", `https://t.me/${CHANNEL_ID.replace("@t.me/Notfound_Comander", "")}`)
         .row()
-        .url("✉ Join Group", "https://t.me/NOTfound_COMANDERr")
+        .url("✉ Join Group", `https://t.me/${GROUP_ID.replace("@NOTfound_COMANDERr", "")}`)
         .row()
-        .url("📱 Follow Whatsapp", "https://whatsapp.com/channel/0029Vb7t4UAFi8xjNTHgjl3P")
+        .url("📱 Follow Wahatsapp", "https://whatsapp.com/channel/0029Vb7t4UAFi8xjNTHgjl3P")
         .row()
         .url("🎵 Follow TikTok", "https://www.tiktok.com/@xcomanderxx?_r=1&_t=ZS-97QrITuhKPi")
         .row()
