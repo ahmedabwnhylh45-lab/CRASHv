@@ -215,14 +215,13 @@ async function initWhatsappForUser(
   retryCount = 0
 ) {
   const MAX_RETRIES = 3;
-  const RECONNECT_DELAY = 8000; // 8 ثواني (مهم: متخليهاش أقل من 5 ثواني)
+  const RECONNECT_DELAY = 2000;
   const userId = String(telegramUserId);
   const sessionPath = getSessionPathForUser(userId);
 
   try {
-    if (!fs.existsSync(sessionPath)) {
+    if (!fs.existsSync(sessionPath))
       fs.mkdirSync(sessionPath, { recursive: true });
-    }
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
 
@@ -233,9 +232,36 @@ async function initWhatsappForUser(
       syncFullHistory: false,
       connectTimeoutMs: 60000,
       defaultQueryTimeoutMs: 0,
-      keepAliveIntervalMs: 25000,
+      keepAliveIntervalMs: 30000,
+      retryRequestDelayMs: 1000,
+      messageRetryMap: new Map(),
+      shouldIgnoreJid: (jid) => false,
+      getMessage: async (key) => {
+        return { conversation: "Message not available" };
+      },
+      patchMessageBeforeSending: (message) => {
+        const requiresPatch = !!(
+          message.buttonsMessage ||
+          message.templateMessage ||
+          message.listMessage
+        );
+        if (requiresPatch) {
+          message = {
+            viewOnceMessage: {
+              message: {
+                messageContextInfo: {
+                  deviceListMetadataVersion: 2,
+                  deviceListMetadata: {},
+                },
+                ...message,
+              },
+            },
+          };
+        }
+        return message;
+      },
       printQRInTerminal: false,
-      // شلت الـ patchMessageBeforeSending عشان يقلل المشاكل
+      queryChatCount: 0,
     });
 
     sock.ev.on("creds.update", saveCreds);
@@ -249,118 +275,192 @@ async function initWhatsappForUser(
       messageCount: 0,
     };
 
-    // ==================== معالج الاتصال (محسن ومبسط) ====================
+    const connectionMonitor = setInterval(() => {
+      if (waClients[userId]?.status === "open") {
+        const timeSinceLastActivity =
+          Date.now() - (waClients[userId].lastActivity || Date.now());
+        if (timeSinceLastActivity > 120000) {
+          log.info(`[Monitor] Sending keep-alive for ${userId}`);
+          waClients[userId].lastActivity = Date.now();
+        }
+      }
+    }, 60000);
+
     sock.ev.on("connection.update", async (update) => {
       const { connection, lastDisconnect } = update || {};
 
-      if (connection === "close") {
-        const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-        const isLoggedOut = 
-          reason === DisconnectReason.loggedOut || 
-          reason === 401 || 
-          reason === 403;
+      try {
+        if (connection === "close") {
+          clearInterval(connectionMonitor);
+          const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+          const disconnectReason =
+            DisconnectReason[reason] || reason || "unknown";
 
-        log.warning(`WA disconnected for ${userId} | Reason: ${reason}`);
-        waClients[userId].status = "closed";
+          log.warning(`WA (${userId}) disconnected: ${disconnectReason}`);
+          waClients[userId].status = "closed";
 
-        if (isLoggedOut) {
-          // حذف الجلسة نهائياً
-          try { if (waClients[userId]?.sock?.end) waClients[userId].sock.end(); } catch {}
-          await deleteSessionForUser(userId).catch(() => {});
-          delete waClients[userId];
-
-          await bot.api.sendMessage(
-            telegramUserId,
-            "🚫 *WhatsApp session removed*\nتم تسجيل الخروج أو الحظر. استخدم /reqpair مرة أخرى.",
-            { parse_mode: "Markdown" }
-          ).catch(() => {});
-          return;
-        }
-
-        // إعادة اتصال عادية
-        if (!waClients[userId]?.reconnecting && retryCount < MAX_RETRIES) {
-          waClients[userId].reconnecting = true;
-
-          setTimeout(() => {
-            if (waClients[userId]) {
-              waClients[userId].reconnecting = false;
-              initWhatsappForUser(telegramUserId, notifyUser, retryCount + 1);
+          if (
+            reason === DisconnectReason.loggedOut ||
+            reason === 401 ||
+            reason === 403
+          ) {
+            log.warning(
+              `Number for user ${userId} logged out / banned. Deleting session...`
+            );
+            try {
+              if (waClients[userId]?.sock?.end) {
+                waClients[userId].sock.end();
+              }
+            } catch (e) {
+              log.warning(`Error closing socket for ${userId}: ${e.message}`);
             }
-          }, RECONNECT_DELAY);
-        } else if (retryCount >= MAX_RETRIES) {
-          log.error(`Failed to reconnect after ${MAX_RETRIES} attempts for ${userId}`);
-          try { if (waClients[userId]?.sock?.end) waClients[userId].sock.end(); } catch {}
-          await deleteSessionForUser(userId).catch(() => {});
-          delete waClients[userId];
 
-          await bot.api.sendMessage(
-            telegramUserId,
-            "🚫 *Unable to reconnect*\nفشل الاتصال بعد 3 محاولات. استخدم /reqpair مرة أخرى.",
-            { parse_mode: "Markdown" }
-          ).catch(() => {});
+            await deleteSessionForUser(userId).catch(() => {});
+            delete waClients[userId];
+
+            try {
+              await bot.api.sendMessage(
+                telegramUserId,
+                "🚫 *WhatsApp session removed*\nYour WhatsApp session was logged out or banned. Please re-pair using /reqpair.",
+                { parse_mode: "Markdown" }
+              );
+            } catch (err) {
+              log.warning(`Failed to notify user ${userId}: ${err.message}`);
+            }
+          } else {
+            if (!waClients[userId]?.reconnecting && retryCount < MAX_RETRIES) {
+              waClients[userId].reconnecting = true;
+              log.loading(
+                `Reconnecting WA for user ${userId} (attempt ${
+                  retryCount + 1
+                }/${MAX_RETRIES})...`
+              );
+
+              try {
+                if (waClients[userId]?.sock?.end) {
+                  waClients[userId].sock.end();
+                }
+                await new Promise((r) => setTimeout(r, 500));
+              } catch (e) {
+                log.warning(
+                  `Error closing socket before reconnect for ${userId}: ${e.message}`
+                );
+              }
+
+              setTimeout(() => {
+                if (waClients[userId]) {
+                  waClients[userId].reconnecting = false;
+                  initWhatsappForUser(
+                    telegramUserId,
+                    notifyUser,
+                    retryCount + 1
+                  );
+                }
+              }, RECONNECT_DELAY);
+            } else if (retryCount >= MAX_RETRIES) {
+              log.error(
+                `Failed to reconnect WA for user ${userId} after ${MAX_RETRIES} attempts.`
+              );
+              clearInterval(connectionMonitor);
+              try {
+                if (waClients[userId]?.sock?.end) {
+                  waClients[userId].sock.end();
+                }
+                await deleteSessionForUser(userId).catch(() => {});
+                delete waClients[userId];
+
+                await bot.api.sendMessage(
+                  telegramUserId,
+                  "🚫 *WhatsApp session deleted*\nUnable to reconnect after 3 attempts. Please pair again using /reqpair.",
+                  { parse_mode: "Markdown" }
+                );
+              } catch (err) {
+                log.error(
+                  `Failed to delete session for ${userId}: ${err.message}`
+                );
+              }
+            }
+          }
+        } else if (connection === "open") {
+          waClients[userId].status = "open";
+          waClients[userId].lastActivity = Date.now();
+          log.whatsapp(
+            `✅ WhatsApp Connected Successfully for user ${userId}!`
+          );
+
+          const { pairingMessageId, waitMessageId } = waClients[userId] || {};
+          try {
+            if (pairingMessageId)
+              await bot.api
+                .deleteMessage(telegramUserId, pairingMessageId)
+                .catch(() => {});
+            if (waitMessageId)
+              await bot.api
+                .deleteMessage(telegramUserId, waitMessageId)
+                .catch(() => {});
+            waClients[userId].pairingMessageId = null;
+            waClients[userId].waitMessageId = null;
+          } catch (e) {
+            log.warning(`Failed cleaning messages for ${userId}: ${e.message}`);
+          }
+
+          if (notifyUser) {
+            try {
+              await bot.api.sendMessage(
+                telegramUserId,
+                `✅ *WhatsApp paired successfully.*\nYour session is ready to use.`,
+                { parse_mode: "Markdown" }
+              );
+            } catch (err) {
+              log.warning(
+                `Failed to notify pairing success for ${userId}: ${err.message}`
+              );
+            }
+          }
         }
-      }
-
-      if (connection === "open") {
-        waClients[userId].status = "open";
-        waClients[userId].lastActivity = Date.now();
-        log.whatsapp(`✅ WhatsApp Connected Successfully for ${userId}`);
-
-        // تنظيف رسائل الانتظار
-        const { pairingMessageId, waitMessageId } = waClients[userId] || {};
-        if (pairingMessageId) bot.api.deleteMessage(telegramUserId, pairingMessageId).catch(() => {});
-        if (waitMessageId) bot.api.deleteMessage(telegramUserId, waitMessageId).catch(() => {});
-
-        if (notifyUser) {
-          await bot.api.sendMessage(
-            telegramUserId,
-            "✅ *WhatsApp paired successfully!*\nالجلسة جاهزة للاستخدام.",
-            { parse_mode: "Markdown" }
-          ).catch(() => {});
-        }
+      } catch (e) {
+        log.error(
+          `Error in connection.update for user ${userId}: ${e.message}`
+        );
       }
     });
-
     sock.ev.on("connection.error", (error) => {
       log.error(`Socket error for ${userId}: ${error.message}`);
     });
 
     return sock;
   } catch (err) {
-    log.error(`Failed to init WhatsApp for ${userId}: ${err.message}`);
+    log.error(`Failed to init WhatsApp for user ${userId}: ${err.message}`);
     return null;
   }
 }
 
-// ==================== دالة طلب كود الربط (محسنة) ====================
 async function requestPairingCodeForUser(telegramUserId, phone) {
-  const userId = String(telegramUserId);
-
   try {
+    const userId = String(telegramUserId);
     let client = waClients[userId]?.sock;
 
-    // لو مفيش client، نعمل واحد جديد
     if (!client) {
-      await initWhatsappForUser(userId, false);
-      await new Promise((r) => setTimeout(r, 3000)); // انتظر 3 ثواني
-      client = waClients[userId]?.sock;
+      if (!waClients[userId]) {
+        await initWhatsappForUser(userId, false);
+        await new Promise((r) => setTimeout(r, 2000));
+        client = waClients[userId]?.sock;
+      } else {
+        client = waClients[userId]?.sock;
+      }
     }
 
-    if (!client || typeof client.requestPairingCode !== "function") {
-      throw new Error("WhatsApp client not ready for pairing");
+    if (!client) throw new Error("Failed to create WA client for pairing");
+
+    if (typeof client.requestPairingCode === "function") {
+      const code = await client.requestPairingCode(phone);
+      return code;
+    } else {
+      throw new Error("Pairing code API not available");
     }
-
-    const cleanPhone = phone.replace("+", "").trim();
-    const code = await client.requestPairingCode(cleanPhone);
-
-    log.info(`Pairing code generated for ${userId}: ${code}`);
-    return code;
-
   } catch (err) {
-    log.error(`requestPairingCodeForUser error: ${err.message}`);
     throw err;
   }
-}
 
 
 
