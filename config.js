@@ -6,4 +6,3 @@ module.exports = {
     chatgrupid: "@NOTfound_COMANDERr",///change your grup public,do not grup private 
     thumburl: "https:///p_374885vzt1.jpg"
 };
-};
