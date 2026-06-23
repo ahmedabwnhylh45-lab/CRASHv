@@ -3667,7 +3667,7 @@ process.on("uncaughtException", async (err) => {
 
 async function validateToken() {
   console.log(
-    chalk.blue(`
+    chalk.blue(`)
 ┌───────────────────────────┐
  * helper monitaring created ( rxhl )
  */
