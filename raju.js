@@ -1779,7 +1779,7 @@ bot.use(async (ctx, next) => {
         .url("🎥 Subscribe Youtube", "https://youtube.com/@commander-g1k");
 
       return await ctx.replyWithPhoto(imageMenu, {
-        caption: `<b>⚠️ Access Denied
+        caption: `⚠️ Access Denied
 
 Hello, ${ctx.from.first_name} 👋
 To unlock all features of this bot, you need to complete a few verification steps first.
@@ -1872,7 +1872,7 @@ bot.on("message", async (ctx) => {
         const caption = `<blockquote>
 <b><i>{❓} Xzeso bot bug say hello ${username}</i></b>
 
-<b>【Comander VIP Control v1.0】 🎮
+<b>【Comander VIP Control v1.0】 🎮 </b>
 ───══════════════════───
 ➤ User    : ${username} 👤
 ➤ Dev     : @XComanderx 👨‍💻
