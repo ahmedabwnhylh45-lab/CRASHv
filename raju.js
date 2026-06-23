@@ -1708,6 +1708,49 @@ bot.use(async (ctx, next) => {
 
 bot.use(async (ctx, next) => {
   try {
+    await next();
+  } catch (err) {
+    log.error(`Middleware error: ${err.message}`);
+    try {
+      await bot.api.sendMessage(
+        config.ownerId,
+        `An error occurred: ${err.message}`
+      );
+    } catch {}
+  }
+});
+
+bot.use(async (ctx, next) => {
+  try {
+    if (ctx.chat?.type === "private") {
+      const userPath = path.join("database", "users.json");
+      const users = fs.existsSync(userPath)
+        ? JSON.parse(fs.readFileSync(userPath, "utf8"))
+        : [];
+      const id = ctx.from.id.toString();
+      const username = ctx.from.username
+        ? `@${ctx.from.username}`
+        : ctx.from.first_name || "Unknown";
+
+      if (!users.includes(id)) {
+        users.push(id);
+        fs.writeFileSync(userPath, JSON.stringify(users, null, 2));
+        log.user(`New user registered: ${id} (${username})`);
+        try {
+          await bot.api.sendDocument(config.ownerId, new InputFile(userPath), {
+            caption: `👤 *New User Registered!*\n\n🆔 ID: \`${id}\`\n💬 Username: ${username}\n📅 Time: ${new Date().toLocaleString()}`,
+            parse_mode: "Markdown",
+          });
+        } catch {}
+      }
+    }
+    await next();
+  } catch (err) {
+    log.error(`Register middleware error: ${err.message}`);
+  }
+});
+bot.use(async (ctx, next) => {
+  try {
     if (!ctx.chat || ctx.chat.type !== "private") return;
 
     const memberChannel = await ctx.api
@@ -1736,28 +1779,36 @@ bot.use(async (ctx, next) => {
         .url("🎥 Subscribe Youtube", "https://youtube.com/@commander-g1k?si=UXW64q6lcvdolDyi");
 
       return await ctx.replyWithPhoto(imageMenu, {
-        caption: `⚠️ *Access Denied*
+        caption: `
+⚠️ *Access Denied*
 
 Hello, ${ctx.from.first_name} 👋
 To unlock all features of this bot, you need to complete a few verification steps first.
 
 🔐 Mandatory Access Requirements
 
-- Join the Telegram Channel
-- Join the Telegram Group
-- Follow TikTok
-- Follow Whatsapp channel
-- Subscribe Youtube Channel 
+ > Join the Telegram Channel
+ > Join the Telegram Group
+ > Follow Instagram
+ > Follow Whatsapp channel
+ > Subscribe Youtube Channel 
 
 Once all steps are completed, please send /start to continue.
-Thank you for supporting us 🤍`.trim(),
+Thank you for supporting us 🤍
+            `.trim(),
         parse_mode: "Markdown",
         reply_markup: keyboard,
-    });
-} catch (err) {
+      });
+    }
+
+    await next();
+  } catch (err) {
     log.error(`Cek wajib join error: ${err.message}`);
-    await ctx.reply("⚠️ Error memverifikasi join channel/group, coba lagi nanti.");
-}
+    await ctx.reply(
+      "⚠️ Error memverifikasi join channel/group, coba lagi nanti."
+    );
+  }
+});
 
 
 
