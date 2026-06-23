@@ -4,5 +4,5 @@ module.exports = {
     sessionName: "session",
     chanelid: "@Notfound_Comander",///change your username channel 
     chatgrupid: "@NOTfound_COMANDERr",///change your grup public,do not grup private 
-    thumburl: "https:///p_374885vzt1.jpg"
+    thumburl: "https://k.top4top.io/p_3785nf0ym1.jpg"
 };
