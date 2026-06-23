@@ -9,13 +9,9 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "github:kiuur/baileys",
-    "crypto": "latest",
-    "fs": "latest",
     "jimp": "^0.16.13",
     "pino": "^8.15.1",
     "grammy": "^1.38.3",
-    "child_process": "^1.0.2",
     "chalk": "^4.1.2"
   }
 }
-
