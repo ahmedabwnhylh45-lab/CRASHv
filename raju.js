@@ -1779,7 +1779,7 @@ bot.use(async (ctx, next) => {
         .url("🎥 Subscribe Youtube", "https://youtube.com/@commander-g1k");
 
       return await ctx.replyWithPhoto(imageMenu, {
-        caption: `⚠️ Access Denied
+        caption: `<b>⚠️ Access Denied
 
 Hello, ${ctx.from.first_name} 👋
 To unlock all features of this bot, you need to complete a few verification steps first.
