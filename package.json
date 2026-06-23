@@ -1,8 +1,20 @@
-"dependencies": {
-  "@hapi/boom": "^10.0.1",
-  "@whiskeysockets/baileys": "^6.7.9",
-  "pino": "^8.15.1",
-  "chalk": "^4.1.2",
-  "grammy": "^1.38.3",
-  "jimp": "^0.16.13"
+{
+  "name": "raju-bug-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp Multi-User Bot with Telegram Control",
+  "main": "raju.js",
+  "scripts": {
+    "start": "node raju.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "chalk": "^4.1.2",
+    "grammy": "^1.38.3",
+    "jimp": "^0.16.13",
+    "pino": "^8.15.1"
+  }
 }
